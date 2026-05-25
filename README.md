@@ -1,6 +1,3 @@
-# THM-active-directory-basics-lab
-Hands-on documentation of Active Directory fundamentals from TryHackMe
-```markdown
 # TryHackMe: Active Directory Basics Lab — Hands-On Documentation
 
 ### 🏅 Lab Verification Profile
