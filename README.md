@@ -36,7 +36,7 @@ The initial phase involved reviewing a centralized domain infrastructure (`THM.l
 
 Active Directory tracks assets as "objects" (Users, Machines, Security Groups). To maintain order, the domain infrastructure was partitioned using **Organizational Units (OUs)** to mirror the corporate organizational chart.
 
-`[PLACEHOLDER: Insert Image 2 - OU Hierarchy Structure]`
+![OU Hierarchy Structure](https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/ou%20hierachy.png)
 > **IMAGE SOURCE:** Capture the Active Directory Users and Computers (ADUC) management console dashboard view displaying the THM folder and its departmental child folders.
 > **CAPTION STRING:** *Fig. 2: Structural tree of departmental OUs utilized to apply targeted security configurations and manage structural lifecycles.*
 
@@ -119,3 +119,23 @@ Maintained strictly for backward compatibility, authentication relies on a stand
 ```
 
 ```
+### 📝 Key Operational Notes & Security Takeaways
+
+To better understand the real-world impact of these directory operations, the following core concepts were analyzed during the lab:
+
+#### 1. Directory Cleanups (Simulated Decommissioning)
+* **The Concept:** Think of this as decommissioning old, stale assets on an enterprise network. When a department closes down or merges, maintaining a clean security posture requires removing its old Organizational Unit (OU).
+* **The Safety Mechanisms:** Windows Server protects OUs by default to prevent a rogue administrator or an accidental click from wiping out an entire department (along with all its users and group policies). Decommissioning an OU requires explicitly enabling **Advanced Features** in the *View* menu and unchecking **"Protect object from accidental deletion"** within the object properties. Documenting this step proves an understanding of safe enterprise change-management workflows.
+
+#### 2. Asset Segregation (Hardening the Default State)
+* **The Concept:** When a new workstation or server joins a Windows domain, Active Directory automatically places it into a generic, flat container called **`Computers`**. 
+* **The Security Risk:** Leaving assets in the default container is a dangerous security practice because you cannot link targeted **Group Policy Objects (GPOs)** to generic default containers. 
+* **The Solution:** By moving machines out of the generic pile and sorting them into dedicated, custom OUs (e.g., separating standard client laptops from critical database host servers), strict security boundaries can be enforced. For instance, restrictive firewall configurations can be applied exclusively to servers while maintaining standard access policies for everyday employee workstations.
+
+#### 3. Privilege Auditing (Mapping the Keys to the Kingdom)
+Analyzing the structural administrative boundaries of default high-privilege built-in groups ensures compliance with the **Principle of Least Privilege (PoLP)**:
+* 👑 **Domain Admins:** Possess complete administrative control over all objects, workstations, member servers, and Domain Controllers across the entire infrastructure. If a threat actor compromises a Domain Admin credential, it results in complete network takeover.
+* 👥 **Account Operators:** Restricted to identity management workflows. They can create, update, or decommission standard user accounts and security groups, but lack permissions to modify core system configurations or compromise administrative credentials.
+* ⚙️ **Server Operators:** Tasked with maintaining physical or virtual hardware states. They can log onto domain servers interactively, restart system services, configure backup routines, and format storage volumes, but do not manage identity lifecycles.
+
+> 🛡️ **IAM / SOC Career Alignment:** Documenting this phase demonstrates a practical grip on structural identity placement and access boundaries—key competencies required to identify unauthorized privilege escalations during active security monitoring or access reviews.
