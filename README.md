@@ -6,6 +6,9 @@
 * **Lab Environment:** `THM.local` (Windows Server Enterprise Domain Controller Simulation)
 * **Verification Status:** Room Completed (100%)
 
+
+<img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(867).png" width="100%" alt="Active Directory Basics Completion Banner">
+
 ---
 
 ## 🎯 1. Executive Objective & Project Perspective
@@ -19,7 +22,7 @@ This laboratory document outlines the practical implementation and administratio
 
 The initial phase involved reviewing a centralized domain infrastructure (`THM.local`). Moving away from isolated local computers allows all authentication processes to be forwarded back to a central repository—the Active Directory database (`ntds.dit`).
 
-`[PLACEHOLDER: Insert Image 1 - Infrastructure Diagram]`
+![Infrastructure Diagram](https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/infras%20diagram.png)
 > **IMAGE SOURCE:** Select the schematic image from the Task 2 overview displaying a workstation communicating with a central database host server.
 > **CAPTION STRING:** *Fig. 1: Functional flow of centralized domain authentication vs. isolated local device account authentication.*
 
