@@ -71,15 +71,15 @@ Control over the `Sales` user directory was safely delegated to a technician acc
 ### 📊 Structural Verification & Directory Auditing
 
 #### 1. Over-Privileged Account Verification (The Administrator Account)
-![High Privilege Administrator Configuration](images/admin_privileges.png)
+![High Privilege Administrator Configuration](https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/admin.png)
 * **Explanation:** This view demonstrates an account possessing global domain authority. It explicitly displays membership within high-privilege structural groups (`Domain Admins`), granting total configuration control across the entire domain infrastructure.
 
 #### 2. Targeted Role-Based Access Control (The Technician Account)
-![Technician Restricted Group Membership](images/delegation_control.png)
+![Technician Restricted Group Membership](https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/PHILLIP.png)
 * **Explanation:** This view confirms that the technician account (`Phillip`) remains restricted to standard `Domain Users` group privileges. He holds no global administrative groups, verifying that his helpdesk execution powers were securely bound strictly to the `Sales` OU container behind the scenes.
 
 #### 3. Standard Non-Privileged Identity (Standard Corporate Employee)
-![Standard Employee Account Configuration](images/standard_user_privileges.png)
+![Standard Employee Account Configuration](https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/thomas.png)
 * **Explanation:** This view shows a baseline corporate user (`Thomas`). Like the technician, he is restricted to the standard `Domain Users` container group, ensuring zero structural configuration access over network resources.
 
 
