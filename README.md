@@ -50,12 +50,38 @@ Active Directory tracks assets as "objects" (Users, Machines, Security Groups). 
 
 ---
 
-## 🛠️ 4. Helpdesk Operations & Administrative Delegation
 
-To avoid the dangerous security practice of granting full Domain Admin rights to standard support staff, **Role-Based Access Control (RBAC)** was enforced by delegating limited control over specific organizational paths.
+
+## 🔐 4.## 🔐 4. Helpdesk Operations, Delegation of Control & Role-Based Access Control (RBAC)
+
+To avoid the dangerous security practice of granting full Domain Admin rights to standard support staff, Role-Based Access Control (RBAC) was enforced by delegating limited control over specific organizational paths.
 
 ### Least Privilege Enforcement
+
 Control over the `Sales` user directory was safely delegated to a technician account (`Phillip`) specifically to manage credential issues. This provides helpdesk capabilities without introducing excessive lateral risk.
+
+| User Account | What their "Member Of" tab shows | What their actual power is |
+| :--- | :--- | :--- |
+| **`Administrator`** | `Domain Admins`, `Enterprise Admins`, `Schema Admins` | **Total Control:** Can modify the entire network, access every server, change any security policy, and delete any directory. |
+| **`Phillip`** *(The Technician)* | **`Domain Users`** | **Targeted Control (RBAC):** He looks like a regular user, but because of the Delegation Wizard, he has an explicit rule on the Sales OU that lets him reset passwords for that team only. |
+| **`Thomas / Claire`** *(Standard Employees)* | **`Domain Users`** | **Zero Administrative Power:** Regular staff who can only log into their assigned workstations and do their daily work. |
+
+---
+
+### 📊 Structural Verification & Directory Auditing
+
+#### 1. Over-Privileged Account Verification (The Administrator Account)
+![High Privilege Administrator Configuration](images/admin_privileges.png)
+* **Explanation:** This view demonstrates an account possessing global domain authority. It explicitly displays membership within high-privilege structural groups (`Domain Admins`), granting total configuration control across the entire domain infrastructure.
+
+#### 2. Targeted Role-Based Access Control (The Technician Account)
+![Technician Restricted Group Membership](images/delegation_control.png)
+* **Explanation:** This view confirms that the technician account (`Phillip`) remains restricted to standard `Domain Users` group privileges. He holds no global administrative groups, verifying that his helpdesk execution powers were securely bound strictly to the `Sales` OU container behind the scenes.
+
+#### 3. Standard Non-Privileged Identity (Standard Corporate Employee)
+![Standard Employee Account Configuration](images/standard_user_privileges.png)
+* **Explanation:** This view shows a baseline corporate user (`Thomas`). Like the technician, he is restricted to the standard `Domain Users` container group, ensuring zero structural configuration access over network resources.
+
 
 #### Helpdesk Administrative Automation (PowerShell)
 Routine identity management tasks were processed efficiently using interactive command-line environments within the administrative workstation session:
@@ -64,16 +90,12 @@ Routine identity management tasks were processed efficiently using interactive c
 > **IMAGE SOURCE:** Extract the terminal snapshot block showing the execution of the administrative identity scripts via the host shell.
 > **CAPTION STRING:** *Fig. 3: Executing administrative identity automation scripts via PowerShell to enforce credential lifecycle management.*
 
-```powershell
+
 # Step 1: Securely reset a target user account password within the delegated OU space
 Set-ADAccountPassword sophie -Reset -NewPassword (Read-Host -AsSecureString -Prompt 'New Password') -Verbose
 
 # Step 2: Enforce corporate policy by forcing a password alteration during the next user interactive logon session
 Set-ADUser -ChangePasswordAtLogon $true -Identity sophie -Verbose
-
-```
-
----
 
 ## 🛡️ 5. Baseline Security Policy & Group Policy (GPO) Deployment
 
@@ -139,3 +161,15 @@ Analyzing the structural administrative boundaries of default high-privilege bui
 * ⚙️ **Server Operators:** Tasked with maintaining physical or virtual hardware states. They can log onto domain servers interactively, restart system services, configure backup routines, and format storage volumes, but do not manage identity lifecycles.
 
 > 🛡️ **IAM / SOC Career Alignment:** Documenting this phase demonstrates a practical grip on structural identity placement and access boundaries—key competencies required to identify unauthorized privilege escalations during active security monitoring or access reviews.
+To better understand the real-world impact of Active Directory delegation, the following architectural concepts were analyzed during the lab:
+
+#### 1. The Danger of Over-Privileged Service Accounts
+* **The Real-World Issue:** In legacy or poorly managed corporate environments, helpdesk staff or IT support technicians are frequently added directly to the `Domain Admins` group simply because they need to perform basic identity management tasks like resetting passwords or unlocking accounts. 
+* **The Security Risk:** If a technician's account is compromised via phishing or credential harvesting, the attacker instantly inherits full, domain-wide administrative rights. This allows immediate lateral movement and total infrastructure takeover.
+
+#### 2. Implementing Role-Based Access Control (RBAC)
+* **The Solution:** By using the **Delegation of Control Wizard** in Active Directory, administrative permissions were securely scoped down to the absolute minimum required:
+  * **Scope Limitation:** Restricted exclusively to the `Sales` OU container path. The technician account cannot view or modify objects inside the `IT`, `Management`, or `Marketing` OUs.
+  * **Permission Limitation:** Restricted strictly to password management properties (specifically resetting passwords and forcing password changes at the next user logon session).
+
+> 🛡️ **IAM / SOC Career Alignment:** Implementing targeted organizational delegation is a foundational pillar of modern IAM engineering. This exercise demonstrates a practical mastery of enforcing the **Principle of Least Privilege (PoLP)** at the structural level, a core requirement for mitigating insider threats and restricting lateral compromise vectors during an incident response scenario.
