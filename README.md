@@ -86,17 +86,25 @@ Control over the `Sales` user directory was safely delegated to a technician acc
 #### Helpdesk Administrative Automation (PowerShell)
 Routine identity management tasks were processed efficiently using interactive command-line environments within the administrative workstation session:
 
-`[PLACEHOLDER: Insert Image 3 - Interactive PowerShell Terminal session]`
+![PowerShell Target Prompt Input](https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/search.png)
+![Full PowerShell Automation Sequence](https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/powershell.png)
+*Fig. 3b: The complete execution history in the shell. This window displays both commands running back-to-back, showing the masked password entry followed by the yellow `VERBOSE:` lines confirming the account flag was changed on the Domain Controller.*
+*Fig. 3a: Initiating the `Set-ADAccountPassword` command for user 'sophie'. The console displays the secure `New Password:` interactive prompt, waiting for admin input.*
 > **IMAGE SOURCE:** Extract the terminal snapshot block showing the execution of the administrative identity scripts via the host shell.
 > **CAPTION STRING:** *Fig. 3: Executing administrative identity automation scripts via PowerShell to enforce credential lifecycle management.*
 
 
 # Step 1: Securely reset a target user account password within the delegated OU space
 Set-ADAccountPassword sophie -Reset -NewPassword (Read-Host -AsSecureString -Prompt 'New Password') -Verbose
+* **What happens here:** This command targets the user account `sophie` and forces a password reset directly through the host shell interface.
+* **The Security Mechanism:** Instead of typing the password out in plain text where a shoulder-surfer or local system log could capture it, the `(Read-Host -AsSecureString)` parameter masks the input on the screen with asterisks (`********`) and encrypts the password instantly inside the computer's memory.
+* **The Output Indicator:** The yellow `VERBOSE:` lines confirm that the password alteration successfully reached and updated the object configuration on the Domain Controller.
 
 # Step 2: Enforce corporate policy by forcing a password alteration during the next user interactive logon session
 Set-ADUser -ChangePasswordAtLogon $true -Identity sophie -Verbose
-
+* **What happens here:** This command flags Sophie's account control attributes, forcing her to choose a brand-new password the very next time she attempts an interactive network logon.
+* **The Security Principle:** This establishes a **Zero-Knowledge Architecture**. As a technician, I should never know a user's permanent password. By forcing her to overwrite my temporary password immediately, absolute accountability (non-repudiation) stays with Sophie. If her account is misused later, she cannot claim IT knew her password.
+  
 ## 🛡️ 5. Baseline Security Policy & Group Policy (GPO) Deployment
 
 Operational compliance and security restrictions were pushed globally across all endpoints via **Group Policy Objects (GPOs)** managed and distributed through the domain's network-wide `SYSVOL` share.
@@ -167,9 +175,103 @@ To better understand the real-world impact of Active Directory delegation, the f
 * **The Real-World Issue:** In legacy or poorly managed corporate environments, helpdesk staff or IT support technicians are frequently added directly to the `Domain Admins` group simply because they need to perform basic identity management tasks like resetting passwords or unlocking accounts. 
 * **The Security Risk:** If a technician's account is compromised via phishing or credential harvesting, the attacker instantly inherits full, domain-wide administrative rights. This allows immediate lateral movement and total infrastructure takeover.
 
-#### 2. Implementing Role-Based Access Control (RBAC)
+#### 4. Implementing Role-Based Access Control (RBAC)
 * **The Solution:** By using the **Delegation of Control Wizard** in Active Directory, administrative permissions were securely scoped down to the absolute minimum required:
   * **Scope Limitation:** Restricted exclusively to the `Sales` OU container path. The technician account cannot view or modify objects inside the `IT`, `Management`, or `Marketing` OUs.
   * **Permission Limitation:** Restricted strictly to password management properties (specifically resetting passwords and forcing password changes at the next user logon session).
 
 > 🛡️ **IAM / SOC Career Alignment:** Implementing targeted organizational delegation is a foundational pillar of modern IAM engineering. This exercise demonstrates a practical mastery of enforcing the **Principle of Least Privilege (PoLP)** at the structural level, a core requirement for mitigating insider threats and restricting lateral compromise vectors during an incident response scenario.
+
+#### 4.1. Preventing Plain-Text Password Leaks
+🔨 Step 1: The Secure Password Reset
+PowerShell
+Set-ADAccountPassword sophie -Reset -NewPassword (Read-Host -AsSecureString -Prompt 'New Password') -Verbose
+What it does: Resets the password for a user named sophie.
+
+The Security Mechanism: Instead of typing her new password in plain text where anyone looking at the screen (or checking the command logs) could steal it, the (Read-Host -AsSecureString) part hides the typing. Windows instantly encrypts it in memory to keep it safe.
+
+The -Verbose Flag: Forces PowerShell to show the step-by-step technical details of the reset in real time instead of processing it silently.
+
+🔒 Step 2: Enforcing the Password Policy
+PowerShell
+Set-ADUser -ChangePasswordAtLogon $true -Identity sophie -Verbose
+What it does: Flips a flag on Sophie's account so that the next time she logs in, Windows forces her to choose a new password.
+
+The Security Principle: As an IT or security professional, I should never know a user's permanent password. Forcing an immediate change ensures that only Sophie knows her credentials. This creates clear accountability—if the account does something malicious later, the user cannot claim the helpdesk technician knew their password.
+
+🎯 Why I Prioritized PowerShell Automation Over the GUI
+I integrated this PowerShell module into the project to show how to scale identity tasks and handle credentials securely:
+
+Handling Incidents at Scale: Clicking through menus works fine for one user, but it creates a massive bottleneck during a security incident. If a phishing attack compromises 50 accounts, manual GUI resets take too long. This script demonstrates the foundational logic needed to reset or lock down hundreds of compromised accounts programmatically in seconds.
+
+Securing System Logs: Standard command history files (ConsoleHost_history.txt) automatically save clear-text strings. By using memory-encrypted parameters like (-AsSecureString), I ensure that sensitive user credentials never leak into local log files where attackers could harvest them
+* **The Vulnerability: Hardcoding passwords directly into a command string (like -NewPassword "Password123") is a massive security risk. Windows automatically saves command line history into a local text file (ConsoleHost_history.txt). If you type a password in plain text, it gets saved to that file where anyone or any malicious script can read it.
+
+* **The Fix: Pairing Read-Host with the -AsSecureString parameter masks the password on the screen while you type. Windows instantly encrypts the input directly in the computer's memory, ensuring the password never drops into local text logs.
+
+####4.2.. Creating Absolute Accountability (Non-Repudiation)
+* **Zero-Knowledge Rule: Forcing a password change at next logon ensures the administrator or helpdesk technician only knows a temporary password that expires immediately.
+
+* **The Protection: Once the user logs in and sets their own private password, they are the only person who knows it. This protects me as the technician; if that account commits a malicious insider action later, the user cannot blame the helpdesk by saying, "The IT guy knew my password." It creates a clear audit trail and absolute accountability.
+The Real-World Story of Sophie’s Password Reset
+Scenario:
+Sophie works in the Sales department. She comes to your IT Support desk or calls you because she forgot her password over the weekend and has locked herself out of her computer.
+
+Step 1: The Helpdesk Encounter (Verifying Identity)
+Before you touch a single command, you must verify she is actually Sophie (security protocol). Once confirmed, you open your administrative PowerShell window.
+
+Step 2: Running Step 1 (The Temporary Reset)
+You type the first command:
+
+PowerShell
+Set-ADAccountPassword sophie -Reset -NewPassword (Read-Host -AsSecureString -Prompt 'New Password') -Verbose
+What happens on your screen: The terminal prompts you: New Password:.
+
+What you do: You type a temporary password, for example: Welcome@2026!. As you type, you only see asterisks (*********). You hit Enter.
+
+The Confirmation: Because you typed -Verbose, PowerShell prints a yellow line confirming it successfully changed the password object on the Domain Controller. There is no need for a "confirm password" box like the GUI because the secure string handles the data safely in memory.
+
+Step 3: Running Step 2 (Locking the Policy)
+Right after, you run the second command:
+
+PowerShell
+Set-ADUser -ChangePasswordAtLogon $true -Identity sophie -Verbose
+What you do: You hit Enter. The yellow text confirms the flag is set to $true.
+
+The Hand-off: You look at Sophie and say: "Okay Sophie, I have reset your account. Your temporary password is Welcome@2026!. Go ahead and log into your computer."
+
+Step 4: What Sophie Sees (The Magic Part)
+Sophie goes back to her desk. She types her username (sophie) and the temporary password (Welcome@2026!) into the standard Windows login screen.
+
+Instead of letting her see her desktop, Windows immediately pops up a message on her monitor:
+
+⚠️ "The user's password must be changed before signing in."
+
+Sophie clicks "OK". Windows then shows her two boxes:
+
+New Password
+
+Confirm Password
+
+Sophie types in her private, permanent password (that only she knows) and hits Enter. Windows says "Your password has been changed," and she logs into her desktop safely.
+🛡️ IAM / SOC Career Alignment: Security operations scale through automation. Mastering Active Directory management via PowerShell is an essential asset for IAM provisioning workflows and incident response isolation procedures (such as rapidly locking down or resetting compromised credentials en masse during a ransomware outbreak).
+
+
+
+
+#### 1. Preventing Plain-Text Password Leaks
+
+* **The Vulnerability:** Hardcoding raw passwords directly into a script string (like `-NewPassword "Password123"`) is a critical risk because Windows automatically saves command line histories into a plain text file (`ConsoleHost_history.txt`). Anyone or any malicious discovery script gaining access to the endpoint can easily harvest those credentials.
+* **The Defensive Implementation:** Using masked input fields dynamically hides credentials from the display and completely bypasses clear-text storage within local asset logging boundaries.
+
+#### 2. Creating Absolute Accountability
+
+* **The Strategic Outcome:** Forcing password updates at first logon shields support personnel from false insider-threat accusations. It guarantees that the user is the sole custodian of their identity, preserving a flawless forensic audit trail.
+
+> 🛡️ **IAM / SOC Career Alignment:** Security operations scale through automation. Mastering Active Directory management via PowerShell is an essential asset for IAM provisioning workflows and incident response isolation procedures (such as rapidly locking down or resetting compromised credentials en masse during a ransomware outbreak).
+
+---
+
+### 💡 Why this works perfectly for your repo:
+
+It doesn't use over-complicated, high-level jargon. It explains **exactly what happens on the screen** (the asterisks, the yellow text, the next login prompt) so a recruiter reading it immediately knows *you* actually performed the lab, understood the mechanics, and knew the exact defensive reasoning behind the commands.
