@@ -116,9 +116,20 @@ Operational compliance and security restrictions were pushed globally across all
 
 ### Implemented GPO Configurations:
 
-* **Password Length Policy:** Enforced a baseline minimum length restriction of **10 characters** within the *Default Domain Policy* to eliminate weak user-defined credentials.
+* **Password Length Policy:** Enforced a baseline minimum length restriction of **10 characters** within the *Default Domain Policy* to eliminate weak user-defined credentials.The Security Reason: This eliminates weak, easily guessable user credentials. Longer passwords significantly increase the time and computing power an attacker needs to crack a password hash.What happens here: This changes the domain-wide rule for password complexity. Any user attempting to create or update their password will be blocked by Windows unless it meets the 10-character standard.
+  Computer Configuration ➔ Policies ➔ Windows Settings ➔ Security Settings ➔ Account Policies ➔ Password Policy.
+ :Double-click Minimum password length, set it to 10 characters, and click Apply.
 * **Session Inactivity Protection:** Configured a global endpoint policy to automatically trigger standard screen locks after **5 minutes** of continuous system inactivity, securing unattended machines.
-* **Control Panel Restrictions:** Deployed a targeted custom GPO (`Restrict Control Panel Access`) linked explicitly to non-IT departments (`Management`, `Marketing`, `Sales`) to prevent unprivileged users from altering local operating system parameters.
+ * Inside the same Group Policy Management Editor window, navigate to: Computer Configuration ➔ Policies ➔ Windows Settings ➔ Security Settings ➔ Local Policies ➔ Security Options,Locate Interactive logon: Machine inactivity limit.
+Define the security policy setting value to 300 seconds (5 minutes) and click Apply..
+  *The Security Reason: This stops "walk-by" attacks. If an employee leaves their desk to grab coffee and forgets to lock their machine, the system secures itself automatically before an unauthorized person can touch their computer.
+  *What happens here: Windows monitors user input (mouse movements and keyboard strokes). If the operating system detects zero input for 5 continuous minutes, it automatically drops the desktop session back to the secure Windows lock screen.
+  
+* **Control Panel Restrictions:** Deployed a targeted custom GPO (`Restrict Control Panel Access`) linked explicitly to non-IT departments (`Management`, `Marketing`, `Sales`,`Research and Development`) to prevent unprivileged users from altering local operating system parameters.The Security Reason: Non-technical users do not need to change system settings. Blocking access to the Control Panel and Windows Settings prevents unprivileged users from accidentally altering operating system parameters, disabling security software, or installing unapproved applications excluding IT DEPARTMENT.
+  Control Panel Restrictions:User Configuration ➔ Policies ➔ Administrative Templates ➔ Control Panel.
+Double-click Prohibit access to Control Panel and PC settings, toggle it to Enabled, and click Apply.
+The Security Principle: Enforces the Principle of Least Privilege. Non-technical users do not need access to core configuration screens. Restricting this access prevents them from making accidental system changes, altering network adapters, or disabling critical local security software.
+
 * **Immediate Baseline Enforcement:** Leveraged the command `gpupdate /force` on endpoints to pull latest policies immediately, bypassing the default 2-hour update delay.
 
 ---
@@ -256,8 +267,20 @@ Confirm Password
 Sophie types in her private, permanent password (that only she knows) and hits Enter. Windows says "Your password has been changed," and she logs into her desktop safely.
 🛡️ IAM / SOC Career Alignment: Security operations scale through automation. Mastering Active Directory management via PowerShell is an essential asset for IAM provisioning workflows and incident response isolation procedures (such as rapidly locking down or resetting compromised credentials en masse during a ransomware outbreak).
 
+### 🏃‍♂️ Real-World Scenario Workflow
+1. **The Request:** A user (Sophie) forgets her password and contacts the helpdesk.
+2. **The Admin Action:** The technician uses PowerShell to set a temporary password securely (`Welcome@2026!`) and flips the `-ChangePasswordAtLogon` flag to `$true`.
+3. **The User Experience:** The technician hands Sophie the temporary password. When Sophie tries to log in at her workstation, Windows intercepts the login, blocks desktop access, and forces her to create a private, permanent password. 
+4. **The Security Result:** The technician never knows Sophie's real password, establishing complete zero-knowledge privacy and absolute accountability.
+"The user's password must be changed before signing in."
 
+Sophie clicks "OK". Windows then shows her two boxes:
 
+New Password
+
+Confirm Password
+
+Sophie types in her private, permanent password (that only she knows) and hits Enter. Windows says "Your password has been changed," and she logs into her desktop safely.
 
 #### 1. Preventing Plain-Text Password Leaks
 
