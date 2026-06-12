@@ -119,19 +119,28 @@ Operational compliance and security restrictions were pushed globally across all
 * **Password Length Policy:** Enforced a baseline minimum length restriction of **10 characters** within the *Default Domain Policy* to eliminate weak user-defined credentials.The Security Reason: This eliminates weak, easily guessable user credentials. Longer passwords significantly increase the time and computing power an attacker needs to crack a password hash.What happens here: This changes the domain-wide rule for password complexity. Any user attempting to create or update their password will be blocked by Windows unless it meets the 10-character standard.
   Computer Configuration ➔ Policies ➔ Windows Settings ➔ Security Settings ➔ Account Policies ➔ Password Policy.
  :Double-click Minimum password length, set it to 10 characters, and click Apply.
+it establishes a uniform security baseline that applies to all corporate accounts—including administrative, IT personnel, and general users—ensuring no account remains a weak entry point.
 * **Session Inactivity Protection:** Configured a global endpoint policy to automatically trigger standard screen locks after **5 minutes** of continuous system inactivity, securing unattended machines.
  * Inside the same Group Policy Management Editor window, navigate to: Computer Configuration ➔ Policies ➔ Windows Settings ➔ Security Settings ➔ Local Policies ➔ Security Options,Locate Interactive logon: Machine inactivity limit.
 Define the security policy setting value to 300 seconds (5 minutes) and click Apply..
   *The Security Reason: This stops "walk-by" attacks. If an employee leaves their desk to grab coffee and forgets to lock their machine, the system secures itself automatically before an unauthorized person can touch their computer.
   *What happens here: Windows monitors user input (mouse movements and keyboard strokes). If the operating system detects zero input for 5 continuous minutes, it automatically drops the desktop session back to the secure Windows lock screen.
-  
+  Similar to the password policy, this is enforced at the domain root level because idle workstation vulnerability is a universal risk that applies to all endpoints, including those utilized by high-privilege IT staff.
+
 * **Control Panel Restrictions:** Deployed a targeted custom GPO (`Restrict Control Panel Access`) linked explicitly to non-IT departments (`Management`, `Marketing`, `Sales`,`Research and Development`) to prevent unprivileged users from altering local operating system parameters.The Security Reason: Non-technical users do not need to change system settings. Blocking access to the Control Panel and Windows Settings prevents unprivileged users from accidentally altering operating system parameters, disabling security software, or installing unapproved applications excluding IT DEPARTMENT.
   Control Panel Restrictions:User Configuration ➔ Policies ➔ Administrative Templates ➔ Control Panel.
 Double-click Prohibit access to Control Panel and PC settings, toggle it to Enabled, and click Apply.
 The Security Principle: Enforces the Principle of Least Privilege. Non-technical users do not need access to core configuration screens. Restricting this access prevents them from making accidental system changes, altering network adapters, or disabling critical local security software.
 
-* **Immediate Baseline Enforcement:** Leveraged the command `gpupdate /force` on endpoints to pull latest policies immediately, bypassing the default 2-hour update delay.
+The Architectural Strategy: This restriction explicitly excludes the IT department because administrators require continuous, unrestricted access to the Control Panel to perform critical operational tasks like troubleshooting networks, updating hardware drivers, and managing system security configurations. Creating a separate GPO ensures non-technical users are locked down under Least Privilege without breaking IT support capabilities
 
+* **Immediate Baseline Enforcement: Leveraged the command gpupdate /force on endpoints to pull latest policies immediately, bypassing the default 2-hour update delay.
+
+The Execution Path: Desktop Search Bar ➔ Type cmd ➔ Right-click Command Prompt ➔ Select Run as administrator ➔ Execute gpupdate /force.
+
+The Security Reason: Active Directory objects normally refresh their Group Policies in the background every 90 to 120 minutes. In a hardening deployment or an active incident response scenario, leaving an enterprise vulnerable during this propagation window is an unacceptable security risk.
+
+The Operational Strategy: Forcing an immediate refresh ensures that your newly implemented baseline controls—the 10-character password requirement, the 5-minute inactivity lock, and the Control Panel restrictions—are actively running on all domain endpoints instantly, verifying total compliance without requiring system reboots.
 ---
 
 ## 🔑 6. Network Authentication Mechanisms
