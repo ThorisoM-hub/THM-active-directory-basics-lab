@@ -143,6 +143,7 @@ Double-click Prohibit access to Control Panel and PC settings, toggle it to Enab
 The Security Principle: Enforces the Principle of Least Privilege. Non-technical users do not need access to core configuration screens. Restricting this access prevents them from making accidental system changes, altering network adapters, or disabling critical local security software.
 
 The Architectural Strategy: This restriction explicitly excludes the IT department because administrators require continuous, unrestricted access to the Control Panel to perform critical operational tasks like troubleshooting networks, updating hardware drivers, and managing system security configurations. Creating a separate GPO ensures non-technical users are locked down under Least Privilege without breaking IT support capabilities
+
 ---
 **Control Panel Restrictions:** Deployed a targeted custom GPO (`Restrict Control Panel Access`) linked explicitly to non-IT departments (`Management`, `Marketing`, `Sales`, and `Research and Development`) to prevent unprivileged users from altering local operating system parameters.
 
