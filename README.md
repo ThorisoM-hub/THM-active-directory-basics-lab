@@ -109,18 +109,28 @@ Set-ADUser -ChangePasswordAtLogon $true -Identity sophie -Verbose
 
 Operational compliance and security restrictions were pushed globally across all endpoints via **Group Policy Objects (GPOs)** managed and distributed through the domain's network-wide `SYSVOL` share.
 
-`[PLACEHOLDER: Insert Image 4 - Group Policy Management Editor]`
+<img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(869).png" width="100%">
 
-> **IMAGE SOURCE:** Capture the Policy Management window snapshot highlighting the configuration tree for Account Policies and password parameter alterations.
-> **CAPTION STRING:** *Fig. 4: Hardening domain endpoints using the Group Policy Management Editor to configure account and preference baselines.*
+> **IMAGE SOURCE:** Capture the Policy Management window snapshot highlighting the main Group Policy Management console root structure.
+> **CAPTION STRING:** *Fig. 4: Deploying global endpoint security restrictions and administrative compliance across the domain.*
 
 ### Implemented GPO Configurations:
 
-* **Password Length Policy:** Enforced a baseline minimum length restriction of **10 characters** within the *Default Domain Policy* to eliminate weak user-defined credentials.The Security Reason: This eliminates weak, easily guessable user credentials. Longer passwords significantly increase the time and computing power an attacker needs to crack a password hash.What happens here: This changes the domain-wide rule for password complexity. Any user attempting to create or update their password will be blocked by Windows unless it meets the 10-character standard.
+* **Password Length Policy:** Enforced a baseline minimum length restriction of **10 characters** within the *Default Domain Policy* to eliminate weak user-defined credentials.
+<img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(932).png" width="100%">
+* The Security Reason: This eliminates weak, easily guessable user credentials. Longer passwords significantly increase the time and computing power an attacker needs to crack a password hash.What happens here: This changes the domain-wide rule for password complexity. Any user attempting to create or update their password will be blocked by Windows unless it meets the 10-character standard.
   Computer Configuration ➔ Policies ➔ Windows Settings ➔ Security Settings ➔ Account Policies ➔ Password Policy.
  :Double-click Minimum password length, set it to 10 characters, and click Apply.
 it establishes a uniform security baseline that applies to all corporate accounts—including administrative, IT personnel, and general users—ensuring no account remains a weak entry point.
+
+
+
+
+
 * **Session Inactivity Protection:** Configured a global endpoint policy to automatically trigger standard screen locks after **5 minutes** of continuous system inactivity, securing unattended machines.
+  
+<img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(936).png" width="100%">
+  
  * Inside the same Group Policy Management Editor window, navigate to: Computer Configuration ➔ Policies ➔ Windows Settings ➔ Security Settings ➔ Local Policies ➔ Security Options,Locate Interactive logon: Machine inactivity limit.
 Define the security policy setting value to 300 seconds (5 minutes) and click Apply..
   *The Security Reason: This stops "walk-by" attacks. If an employee leaves their desk to grab coffee and forgets to lock their machine, the system secures itself automatically before an unauthorized person can touch their computer.
@@ -142,7 +152,73 @@ The Security Reason: Active Directory objects normally refresh their Group Polic
 
 The Operational Strategy: Forcing an immediate refresh ensures that your newly implemented baseline controls—the 10-character password requirement, the 5-minute inactivity lock, and the Control Panel restrictions—are actively running on all domain endpoints instantly, verifying total compliance without requiring system reboots.
 ---
+**Control Panel Restrictions:** Deployed a targeted custom GPO (`Restrict Control Panel Access`) linked explicitly to non-IT departments (`Management`, `Marketing`, `Sales`, and `Research and Development`) to prevent unprivileged users from altering local operating system parameters.
 
+  #### Step 1: Initializing the Custom GPO Container
+  
+  <img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(900).png" width="100%">
+  
+  > **IMAGE SOURCE:** Screenshot (900).png - Right-clicking the domain root to initialize a brand new Group Policy Object.
+  > **CAPTION STRING:** *Fig. 6: Creating the custom GPO container within the Group Policy Management Console.*
+
+  #### Step 2: Verifying Object Creation
+  
+  <img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(901).png" width="100%">
+  
+  > **IMAGE SOURCE:** Screenshot (901).png - Reviewing the Group Policy Objects list to verify creation.
+  > **CAPTION STRING:** *Fig. 7: Confirming the 'Restrict Control Panel Access' GPO exists in the domain list.*
+
+  #### Step 3: Linking the GPO to Target Department OUs
+  
+  <img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(904).png" width="100%">
+  
+  > **IMAGE SOURCE:** Screenshot (904).png - Right-clicking a department OU to link the restriction policy.
+  > **CAPTION STRING:** *Fig. 8: Target-linking the restriction policy to non-IT organizational units.*
+
+  #### Step 4: Confirming Object Selection
+  
+  <img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(905).png" width="100%">
+  
+  > **IMAGE SOURCE:** Screenshot (905).png - Selecting the exact policy object to map against the target OU.
+  > **CAPTION STRING:** *Fig. 9: Mapping the specific control panel restriction container to target groups.*
+
+  #### Step 5: Editing GPO Policies
+  
+  <img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(918).png" width="100%">
+  
+  > **IMAGE SOURCE:** Screenshot (918).jpg - Opening the Group Policy Management Editor for the custom policy.
+  > **CAPTION STRING:** *Fig. 10: Launching the management editor to define restrictive user policies.*
+
+  #### Step 6: Navigating to Control Panel Administrative Templates
+  
+  <img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(919).png" width="100%">
+  
+  > **IMAGE SOURCE:** Screenshot (919).jpg - Locating the unconfigured Prohibit access to Control Panel properties window.
+  > **CAPTION STRING:** *Fig. 11: Pinpointing core interface administration screens within user configuration.*
+
+  #### Step 7: Enforcing the Access Block
+  
+  <img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(921).png" width="100%">
+  
+  > **IMAGE SOURCE:** Screenshot (921).jpg - Explicitly changing the toggle to Enabled to block system settings access.
+  > **CAPTION STRING:** *Fig. 12: Toggling parameter to Enabled to deny control panel and settings interface access.*
+
+  * **The Execution Path:** `User Configuration ➔ Policies ➔ Administrative Templates ➔ Control Panel`. Double-click *Prohibit access to Control Panel and PC settings*, toggle it to **Enabled**, and click *Apply*.
+  * **The Security Reason:** Non-technical users do not need to change system settings. Blocking access to the Control Panel and Windows Settings prevents unprivileged users from accidentally altering operating system parameters, disabling security software, or installing unapproved applications excluding IT DEPARTMENT.
+  * **The Security Principle:** Enforces the **Principle of Least Privilege**. Non-technical users do not need access to core configuration screens. Restricting this access prevents them from making accidental system changes, altering network adapters, or disabling critical local security software.
+  * **The Architectural Strategy:** This restriction explicitly **excludes the IT department** because administrators require continuous, unrestricted access to the Control Panel to perform critical operational tasks like troubleshooting networks, updating hardware drivers, and managing system security configurations. Creating a separate GPO ensures non-technical users are locked down under Least Privilege without breaking IT support capabilities.
+
+    
+**Immediate Baseline Enforcement: Leveraged the command gpupdate /force on endpoints to pull latest policies immediately, bypassing the default 2-hour update delay.
+<img src="https://github.com/ThorisoM-hub/THM-active-directory-basics-lab/blob/main/images/Screenshot%20(949).png" width="100%">
+> **IMAGE SOURCE:** Screenshot (949).jpg - Command prompt window displaying successful execution of the policy refresh.
+  > **CAPTION STRING:** *Fig. 13: Executing immediate Group Policy updates via elevated command-line interface to confirm successful computer and user policy completion.*
+
+  * **The Execution Path:** `Desktop Search Bar ➔ Type cmd ➔ Right-click Command Prompt ➔ Select Run as administrator ➔ Execute gpupdate /force`.
+  * **The Security Reason:** Active Directory objects normally refresh their Group Policies in the background every 90 to 120 minutes. In a hardening deployment or an active incident response scenario, leaving an enterprise vulnerable during this propagation window is an unacceptable security risk.
+  * **The Operational Strategy:** Forcing an immediate refresh ensures that your newly implemented baseline controls—the 10-character password requirement, the 5-minute inactivity lock, and the Control Panel restrictions—are actively running on all domain endpoints instantly, verifying total compliance without requiring system reboots.
+
+---
 ## 🔑 6. Network Authentication Mechanisms
 
 To validate credentials across the domain without sending plain-text values across the network, two primary protocols were mapped:
