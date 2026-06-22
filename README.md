@@ -143,14 +143,6 @@ Double-click Prohibit access to Control Panel and PC settings, toggle it to Enab
 The Security Principle: Enforces the Principle of Least Privilege. Non-technical users do not need access to core configuration screens. Restricting this access prevents them from making accidental system changes, altering network adapters, or disabling critical local security software.
 
 The Architectural Strategy: This restriction explicitly excludes the IT department because administrators require continuous, unrestricted access to the Control Panel to perform critical operational tasks like troubleshooting networks, updating hardware drivers, and managing system security configurations. Creating a separate GPO ensures non-technical users are locked down under Least Privilege without breaking IT support capabilities
-
-* **Immediate Baseline Enforcement: Leveraged the command gpupdate /force on endpoints to pull latest policies immediately, bypassing the default 2-hour update delay.
-
-The Execution Path: Desktop Search Bar ➔ Type cmd ➔ Right-click Command Prompt ➔ Select Run as administrator ➔ Execute gpupdate /force.
-
-The Security Reason: Active Directory objects normally refresh their Group Policies in the background every 90 to 120 minutes. In a hardening deployment or an active incident response scenario, leaving an enterprise vulnerable during this propagation window is an unacceptable security risk.
-
-The Operational Strategy: Forcing an immediate refresh ensures that your newly implemented baseline controls—the 10-character password requirement, the 5-minute inactivity lock, and the Control Panel restrictions—are actively running on all domain endpoints instantly, verifying total compliance without requiring system reboots.
 ---
 **Control Panel Restrictions:** Deployed a targeted custom GPO (`Restrict Control Panel Access`) linked explicitly to non-IT departments (`Management`, `Marketing`, `Sales`, and `Research and Development`) to prevent unprivileged users from altering local operating system parameters.
 
